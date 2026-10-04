@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Clinic Appointment Manager</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='project2.css') }}"
+    >
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", () => {
+
+            /* ==========================================
+               ELEMENTS
+            ========================================== */
+
+            const nameInput =
+                document.getElementById("name");
+
+            const form =
+                document.querySelector(".progressive-form");
+
+            const nameError =
+                document.getElementById("name-error");
+
+            const ageInput =
+                document.getElementById("age");
+
+            const ageError =
+                document.getElementById("age-error");
+
+            const ageValueEffect =
+                document.getElementById("age-value-effect");
+
+            const genderInput =
+                document.getElementById("gender");
+
+            const appointmentHour =
+                document.getElementById("appointment-hour");
+
+            const appointmentMinute =
+                document.getElementById("appointment-minute");
+
+            const appointmentPeriod =
+                document.getElementById("appointment-period");
+
+            const appointmentTime =
+                document.getElementById("appointmenttime");
+
+            const countryCode =
+                document.getElementById("country-code");
+
+            const countryPicker =
+                document.getElementById("country-picker");
+
+            const countryPickerButton =
+                document.getElementById("country-picker-button");
+
+            const countryOptions =
+                document.getElementById("country-options");
+
+            const phoneInput =
+                document.getElementById("phone");
+
+            const phoneError =
+                document.getElementById("phone-error");
+
+            const phoneValueEffect =
+                document.getElementById("phone-value-effect");
+
+            const formMosaic =
+                document.getElementById("form-mosaic");
+
+            const appointmentDate =
+                document.getElementById("appointmentdate");
+
+            const doctorInput =
+                document.getElementById("doctor");
+
+            const reasonInput =
+                document.getElementById("reason");
+
+
+            /* ==========================================
+               VARIABLES
+            ========================================== */
+
+            const tileColors = [
+                "#ff4d6d",
+                "#ff9f1c",
+                "#ffe66d",
+                "#2ec4b6",
+                "#3a86ff",
+                "#8338ec",
+                "#f15bb5"
+            ];
+
+            let nameIsAnimating = false;
+
+            let ageIsAnimating = false;
+
+            let phoneIsAnimating = false;
+
+
+            /* ==========================================
+               REVEAL FUNCTION
+            ========================================== */
+
+            const revealStep = (step) => {
+
+                document
+                    .querySelectorAll(
+                        `[data-reveal-step="${step}"]`
+                    )
+                    .forEach((element) => {
+
+                        element.classList.add("revealed");
+
+                    });
+
+            };
+
+
+            /* ==========================================
+               VALIDATION STATUS OF EACH STEP
+            ========================================== */
+
+            const stepIsValid = [
+
+                () =>
+                    nameInput.classList.contains(
+                        "is-valid"
+                    ),
+
+                () =>
+                    ageInput.classList.contains(
+                        "is-valid"
+                    ),
+
+                () =>
+                    genderInput.value !== "",
+
+                () =>
+                    doctorInput.value !== "",
+
+                () =>
+                    appointmentDate.value !== "",
+
+                () =>
+                    appointmentTime.value !== "",
+
+                () =>
+                    countryCode.value !== "" &&
+                    phoneInput.classList.contains(
+                        "is-valid"
+                    ),
+
+                () =>
+                    reasonInput.value.trim() !== ""
+
+            ];
+
+
+            /* ==========================================
+               SHIFT + / SHORTCUT
+            ========================================== */
+
+            window.addEventListener(
+                "keydown",
+                (event) => {
+
+                    const isRevealShortcut =
+                        event.shiftKey &&
+                        (
+                            event.code === "Slash" ||
+                            event.key === "/" ||
+                            event.key === "?"
+                        );
+
+
+                    if (!isRevealShortcut) {
+                        return;
+                    }
+
+
+                    event.preventDefault();
+
+                    document.getElementById(
+                        "admin-appointments-button"
+                    ).hidden = false;
+
+
+                    const stagedFields =
+                        document.querySelectorAll(
+                            '[data-reveal-step]:not([data-reveal-step="0"])'
+                        );
+
+
+                    const areAllVisible =
+                        Array.from(stagedFields).every(
+                            (element) =>
+                                element.classList.contains(
+                                    "revealed"
+                                )
+                        );
+
+
+                    if (areAllVisible) {
+
+                        stagedFields.forEach(
+                            (element) => {
+
+                                element.classList.remove(
+                                    "revealed"
+                                );
+
+                            }
+                        );
+
+                        return;
+
+                    }
+
+
+                    stagedFields.forEach(
+                        (element) => {
+
+                            element.classList.remove(
+                                "revealed"
+                            );
+
+                        }
+                    );
+
+
+                    void form.offsetWidth;
+
+
+                    stagedFields.forEach(
+                        (element) => {
+
+                            element.classList.add(
+                                "revealed"
+                            );
+
+                        }
+                    );
+
+                },
+                true
+            );
+
+
+            /* ==========================================
+               ENTER KEY → NEXT FIELD
+            ========================================== */
+
+            form.addEventListener(
+                "keydown",
+                (event) => {
+
+                    if (event.key !== "Enter") {
+                        return;
+                    }
+
+
+                    if (
+                        event.shiftKey &&
+                        event.target.tagName === "TEXTAREA"
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const stepElement =
+                        event.target.closest(
+                            "[data-reveal-step]"
+                        );
+
+
+                    const step =
+                        Number(
+                            stepElement?.dataset.revealStep
+                        );
+
+
+                    if (
+                        !Number.isInteger(step) ||
+                        !stepIsValid[step]?.()
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    event.preventDefault();
+
+
+                    if (
+                        event.target ===
+                        countryPickerButton
+                    ) {
+
+                        countryOptions.classList.remove(
+                            "open"
+                        );
+
+                        countryPickerButton.setAttribute(
+                            "aria-expanded",
+                            "false"
+                        );
+
+                    }
+
+
+                    const nextStep =
+                        step + 1;
+
+
+                    revealStep(nextStep);
+
+
+                    const focusSelector =
+                        'input:not([type="hidden"]):not(.country-code), select:not(.country-code), textarea, .country-picker-button, button[type="submit"]';
+
+
+                    const nextField =
+                        Array.from(
+                            form.querySelectorAll(
+                                `[data-reveal-step="${nextStep}"]`
+                            )
+                        )
+                        .map(
+                            (element) =>
+                                element.matches(
+                                    focusSelector
+                                )
+                                    ? element
+                                    : element.querySelector(
+                                        focusSelector
+                                    )
+                        )
+                        .find(Boolean);
+
+
+                    nextField?.focus();
+
+                }
+            );
+
+
+            /* ==========================================
+               CREATE 240 BACKGROUND TILES
+            ========================================== */
+
+            for (
+                let tileIndex = 0;
+                tileIndex < 240;
+                tileIndex += 1
+            ) {
+
+                const tile =
+                    document.createElement("span");
+
+
+                tile.className =
+                    "form-tile";
+
+
+                tile.style.setProperty(
+                    "--tile-color",
+                    tileColors[
+                        Math.floor(
+                            Math.random() *
+                            tileColors.length
+                        )
+                    ]
+                );
+
+
+                formMosaic.appendChild(tile);
+
+            }
+
+
+            /* ==========================================
+               NAME VALIDATION
+            ========================================== */
+
+            nameInput.addEventListener(
+                "input",
+                () => {
+
+                    if (nameIsAnimating) {
+                        return;
+                    }
+
+
+                    const name =
+                        nameInput.value.trim();
+
+
+                    const isValid =
+                        name !== "" &&
+                        /^[\p{L}\p{M}][\p{L}\p{M}\s'-]*$/u.test(
+                            name
+                        );
+
+
+                    nameInput.classList.toggle(
+                        "is-valid",
+                        isValid
+                    );
+
+
+                    if (isValid) {
+
+                        nameInput.removeAttribute(
+                            "aria-invalid"
+                        );
+
+                        nameError.classList.remove(
+                            "visible"
+                        );
+
+
+                        /* SHOW AGE */
+
+                        revealStep(1);
+
+                        return;
+
+                    }
+
+
+                    nameInput.classList.remove(
+                        "is-valid"
+                    );
+
+
+                    if (nameInput.value !== "") {
+
+                        nameInput.setAttribute(
+                            "aria-invalid",
+                            "true"
+                        );
+
+
+                        nameError.classList.add(
+                            "visible"
+                        );
+
+
+                        nameIsAnimating = true;
+
+
+                        window.setTimeout(
+                            () => {
+
+                                nameInput.value = "";
+
+                                nameInput.classList.remove(
+                                    "is-valid"
+                                );
+
+                                nameInput.removeAttribute(
+                                    "aria-invalid"
+                                );
+
+                                nameIsAnimating = false;
+
+                                nameInput.focus();
+
+                            },
+                            550
+                        );
+
+                    }
+
+                }
+            );
+
+
+            /* ==========================================
+               AGE VALIDATION
+            ========================================== */
+
+            ageInput.addEventListener(
+                "input",
+                () => {
+
+                    if (ageIsAnimating) {
+                        return;
+                    }
+
+
+                    const age =
+                        ageInput.valueAsNumber;
+
+
+                    const isInvalid =
+                        ageInput.value !== "" &&
+                        (
+                            !Number.isInteger(age) ||
+                            age < 1 ||
+                            age > 120
+                        );
+
+
+                    if (!isInvalid) {
+
+                        ageInput.removeAttribute(
+                            "aria-invalid"
+                        );
+
+
+                        ageInput.classList.toggle(
+                            "is-valid",
+                            ageInput.value !== ""
+                        );
+
+
+                        if (
+                            ageInput.value !== ""
+                        ) {
+
+                            ageError.classList.remove(
+                                "visible"
+                            );
+
+
+                            /* SHOW GENDER */
+
+                            revealStep(2);
+
+                        }
+
+                        return;
+
+                    }
+
+
+                    ageInput.classList.remove(
+                        "is-valid"
+                    );
+
+
+                    ageInput.setAttribute(
+                        "aria-invalid",
+                        "true"
+                    );
+
+
+                    ageError.classList.add(
+                        "visible"
+                    );
+
+
+                    ageIsAnimating = true;
+
+
+                    ageValueEffect.textContent =
+                        ageInput.value;
+
+
+                    ageInput.classList.add(
+                        "text-hidden"
+                    );
+
+
+                    ageValueEffect.classList.add(
+                        "active"
+                    );
+
+
+                    window.setTimeout(
+                        () => {
+
+                            ageInput.value = "";
+
+                            ageInput.removeAttribute(
+                                "aria-invalid"
+                            );
+
+                            ageInput.classList.remove(
+                                "is-valid"
+                            );
+
+                            ageInput.classList.remove(
+                                "text-hidden"
+                            );
+
+                            ageValueEffect.classList.remove(
+                                "active"
+                            );
+
+                            ageValueEffect.textContent =
+                                "";
+
+                            ageIsAnimating = false;
+
+                            ageInput.focus();
+
+                        },
+                        550
+                    );
+
+                }
+            );
+
+
+            /* ==========================================
+               GENDER
+            ========================================== */
+
+            genderInput.addEventListener(
+                "change",
+                () => {
+
+                    const isValid =
+                        genderInput.value !== "";
+
+
+                    genderInput.classList.toggle(
+                        "is-valid",
+                        isValid
+                    );
+
+
+                    if (isValid) {
+
+                        /* SHOW DOCTOR */
+
+                        revealStep(3);
+
+                    }
+
+                }
+            );
+
+
+            /* ==========================================
+               DOCTOR
+            ========================================== */
+
+            doctorInput.addEventListener(
+                "change",
+                () => {
+
+                    if (
+                        doctorInput.value !== ""
+                    ) {
+
+                        doctorInput.classList.add(
+                            "is-valid"
+                        );
+
+
+                        /* SHOW DATE */
+
+                        revealStep(4);
+
+                    }
+
+                }
+            );
+
+
+            /* ==========================================
+               APPOINTMENT DATE
+            ========================================== */
+
+            appointmentDate.addEventListener(
+                "change",
+                () => {
+
+                    if (
+                        appointmentDate.value !== ""
+                    ) {
+
+                        appointmentDate.classList.add(
+                            "is-valid"
+                        );
+
+
+                        /* SHOW TIME */
+
+                        revealStep(5);
+
+                    }
+
+                }
+            );
+
+
+            /* ==========================================
+               APPOINTMENT TIME
+            ========================================== */
+
+            const updateAppointmentTime = () => {
+
+                const hour =
+                    Number(
+                        appointmentHour.value
+                    );
+
+
+                const minute =
+                    Number(
+                        appointmentMinute.value
+                    );
+
+
+                const period =
+                    appointmentPeriod.value;
+
+
+                if (
+                    !appointmentHour.value ||
+                    !appointmentMinute.value ||
+                    !period ||
+                    hour < 1 ||
+                    hour > 12 ||
+                    minute < 0 ||
+                    minute > 59
+                ) {
+
+                    appointmentTime.value = "";
+
+                    return;
+
+                }
+
+
+                const hour24 =
+                    (hour % 12) +
+                    (
+                        period === "PM"
+                            ? 12
+                            : 0
+                    );
+
+
+                appointmentTime.value =
+                    `${String(hour24).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+
+
+                /* SHOW PHONE */
+
+                revealStep(6);
+
+            };
+
+
+            [
+                appointmentHour,
+                appointmentMinute,
+                appointmentPeriod
+            ].forEach(
+                (control) => {
+
+                    control.addEventListener(
+                        "input",
+                        updateAppointmentTime
+                    );
+
+
+                    control.addEventListener(
+                        "change",
+                        updateAppointmentTime
+                    );
+
+                }
+            );
+
+
+            /* ==========================================
+               COUNTRY CODE
+            ========================================== */
+
+            countryCode.addEventListener(
+                "change",
+                () => {
+
+                    countryPicker.classList.toggle(
+                        "is-valid",
+                        countryCode.value !== ""
+                    );
+
+                }
+            );
+
+
+            /* ==========================================
+               COUNTRY PICKER
+            ========================================== */
+
+            countryPickerButton.addEventListener(
+                "click",
+                () => {
+
+                    const isOpen =
+                        countryOptions.classList.toggle(
+                            "open"
+                        );
+
+
+                    countryPickerButton.setAttribute(
+                        "aria-expanded",
+                        String(isOpen)
+                    );
+
+                }
+            );
+
+
+            /* ==========================================
+               COUNTRY OPTION
+            ========================================== */
+
+            countryOptions.addEventListener(
+                "click",
+                (event) => {
+
+                    const option =
+                        event.target.closest(
+                            "[data-country-code]"
+                        );
+
+
+                    if (!option) {
+                        return;
+                    }
+
+
+                    countryCode.value =
+                        option.dataset.countryCode;
+
+
+                    countryCode.dispatchEvent(
+                        new Event(
+                            "change",
+                            {
+                                bubbles: true
+                            }
+                        )
+                    );
+
+
+                    countryPickerButton.textContent =
+                        `${option.dataset.flag} ${option.dataset.countryCode}`;
+
+
+                    countryOptions.classList.remove(
+                        "open"
+                    );
+
+
+                    countryPickerButton.setAttribute(
+                        "aria-expanded",
+                        "false"
+                    );
+
+                }
+            );
+
+
+            /* ==========================================
+               CLOSE COUNTRY PICKER
+            ========================================== */
+
+            document.addEventListener(
+                "click",
+                (event) => {
+
+                    if (
+                        !countryPicker.contains(
+                            event.target
+                        )
+                    ) {
+
+                        countryOptions.classList.remove(
+                            "open"
+                        );
+
+
+                        countryPickerButton.setAttribute(
+                            "aria-expanded",
+                            "false"
+                        );
+
+                    }
+
+                }
+            );
+
+
+            /* ==========================================
+               PHONE VALIDATION
+            ========================================== */
+
+            phoneInput.addEventListener(
+                "input",
+                () => {
+
+                    if (phoneIsAnimating) {
+                        return;
+                    }
+
+
+                    const value =
+                        phoneInput.value.trim();
+
+
+                    const digits =
+                        phoneInput.value.replace(
+                            /\D/g,
+                            ""
+                        );
+
+
+                    const hasInvalidCharacters =
+                        !/^\+?[0-9().\s-]*$/.test(
+                            value
+                        );
+
+
+                    const isValid =
+                        value !== "" &&
+                        !hasInvalidCharacters &&
+                        digits.length === 10;
+
+
+                    phoneInput.classList.toggle(
+                        "is-valid",
+                        isValid
+                    );
+
+
+                    phoneInput.setCustomValidity(
+                        value !== "" && !isValid
+                            ? "Enter a phone number containing exactly 10 digits."
+                            : ""
+                    );
+
+
+                    if (isValid) {
+
+                        phoneInput.removeAttribute(
+                            "aria-invalid"
+                        );
+
+
+                        phoneError.classList.remove(
+                            "visible"
+                        );
+
+
+                        /* SHOW REASON */
+
+                        revealStep(7);
+
+                        return;
+
+                    }
+
+
+                    phoneInput.classList.remove(
+                        "is-valid"
+                    );
+
+
+                    if (value !== "") {
+
+                        phoneInput.setAttribute(
+                            "aria-invalid",
+                            "true"
+                        );
+
+                    }
+
+
+                    if (
+                        hasInvalidCharacters ||
+                        digits.length > 10
+                    ) {
+
+                        showPhoneError();
+
+                    }
+
+                }
+            );
+
+
+            /* ==========================================
+               PHONE BLUR
+            ========================================== */
+
+            phoneInput.addEventListener(
+                "blur",
+                () => {
+
+                    const value =
+                        phoneInput.value.trim();
+
+
+                    const digits =
+                        phoneInput.value.replace(
+                            /\D/g,
+                            ""
+                        );
+
+
+                    if (
+                        value !== "" &&
+                        digits.length !== 10
+                    ) {
+
+                        phoneInput.setCustomValidity(
+                            "Enter a phone number containing exactly 10 digits."
+                        );
+
+
+                        phoneInput.setAttribute(
+                            "aria-invalid",
+                            "true"
+                        );
+
+
+                        showPhoneError();
+
+                    }
+
+                }
+            );
+
+
+            /* ==========================================
+               PHONE ERROR ANIMATION
+            ========================================== */
+
+            function showPhoneError() {
+
+                if (phoneIsAnimating) {
+                    return;
+                }
+
+
+                phoneError.classList.add(
+                    "visible"
+                );
+
+
+                phoneIsAnimating = true;
+
+
+                phoneValueEffect.textContent =
+                    phoneInput.value;
+
+
+                phoneInput.classList.add(
+                    "text-hidden"
+                );
+
+
+                phoneValueEffect.classList.add(
+                    "active"
+                );
+
+
+                window.setTimeout(
+                    () => {
+
+                        phoneInput.value = "";
+
+
+                        phoneInput.classList.remove(
+                            "is-valid",
+                            "text-hidden"
+                        );
+
+
+                        phoneInput.removeAttribute(
+                            "aria-invalid"
+                        );
+
+
+                        phoneInput.setCustomValidity(
+                            ""
+                        );
+
+
+                        phoneValueEffect.classList.remove(
+                            "active"
+                        );
+
+
+                        phoneValueEffect.textContent =
+                            "";
+
+
+                        phoneIsAnimating = false;
+
+
+                        phoneInput.focus();
+
+                    },
+                    550
+                );
+
+            }
+
+
+            /* ==========================================
+               REASON
+            ========================================== */
+
+            reasonInput.addEventListener(
+                "input",
+                () => {
+
+                    if (
+                        reasonInput.value.trim() !== ""
+                    ) {
+
+                        /* SHOW SUBMIT BUTTON */
+
+                        revealStep(8);
+
+                    }
+
+                }
+            );
+
+
+            /* ==========================================
+               MINIMUM APPOINTMENT DATE
+            ========================================== */
+
+            const today =
+                new Date()
+                    .toISOString()
+                    .split("T")[0];
+
+
+            appointmentDate.min =
+                today;
+
+        });
+
+    </script>
+
+</head>
+
+
+<body class="body">
+
+
+    <div class="div">
+
+        <a
+            class="admin-appointments-button"
+            id="admin-appointments-button"
+            href="{{ url_for('admin_login') }}"
+            hidden
+        >
+            Admin appointments
+        </a>
+
+
+        <form
+            class="form1 progressive-form"
+            id="1"
+            name="details"
+            method="POST"
+            action="/"
+        >
+
+
+            <!-- =====================================
+                 BACKGROUND MOSAIC
+            ====================================== -->
+
+            <div
+                class="form-mosaic"
+                id="form-mosaic"
+                aria-hidden="true"
+            ></div>
+
+
+            <!-- =====================================
+                 NAME
+            ====================================== -->
+
+            <p
+                class="p1 revealed"
+                data-reveal-step="0"
+            >
+                Enter Your Name:
+            </p>
+
+
+            <input
+                class="inp revealed"
+                id="name"
+                name="name"
+                type="text"
+                placeholder="enter your name:"
+                aria-describedby="name-error"
+                required
+                data-reveal-step="0"
+            >
+
+
+            <span
+                class="name-error revealed"
+                id="name-error"
+                role="alert"
+                aria-live="assertive"
+                data-reveal-step="0"
+            >
+                Please enter your name using letters only.
+            </span>
+
+
+            <!-- =====================================
+                 AGE
+            ====================================== -->
+
+            <p
+                class="p2"
+                data-reveal-step="1"
+            >
+                Enter Your Age:
+            </p>
+
+
+            <input
+                class="inp1"
+                id="age"
+                name="age"
+                type="number"
+                placeholder="enter your age:"
+                min="1"
+                max="120"
+                step="1"
+                aria-describedby="age-error"
+                required
+                data-reveal-step="1"
+            >
+
+
+            <span
+                class="age-value-effect"
+                id="age-value-effect"
+                aria-hidden="true"
+                data-reveal-step="1"
+            ></span>
+
+
+            <span
+                class="age-error"
+                id="age-error"
+                role="alert"
+                aria-live="assertive"
+                data-reveal-step="1"
+            >
+                Please enter an age from 1 to 120!
+            </span>
+
+
+            <!-- =====================================
+                 GENDER
+            ====================================== -->
+
+            <p
+                class="p3"
+                data-reveal-step="2"
+            >
+                Enter Your Gender:
+            </p>
+
+
+            <select
+                class="inp2"
+                id="gender"
+                name="gender"
+                required
+                data-reveal-step="2"
+            >
+
+                <option
+                    value=""
+                    disabled
+                    selected
+                    hidden
+                >
+                    select your gender:
+                </option>
+
+
+                <option value="male">
+                    Male
+                </option>
+
+
+                <option value="female">
+                    Female
+                </option>
+
+
+                <option value="other">
+                    Other
+                </option>
+
+            </select>
+
+
+            <!-- =====================================
+                 DOCTOR
+            ====================================== -->
+
+            <p
+                class="p4"
+                data-reveal-step="3"
+            >
+                Select Your Doctor:
+            </p>
+
+
+            <select
+                class="inp3"
+                id="doctor"
+                name="doctor"
+                required
+                data-reveal-step="3"
+            >
+
+                <option
+                    value=""
+                    disabled
+                    selected
+                    hidden
+                >
+                    select your doctor:
+                </option>
+
+
+                <option value="Dr. Purna">
+                    Dr.PURNA
+                </option>
+
+
+                <option value="Dr. Kalyan">
+                    Dr.KALYAN
+                </option>
+
+
+                <option value="Dr. Gahi">
+                    Dr. GAHI
+                </option>
+
+            </select>
+
+
+            <!-- =====================================
+                 DATE
+            ====================================== -->
+
+            <p
+                class="p5"
+                data-reveal-step="4"
+            >
+                Select Appointment Date:
+            </p>
+
+
+            <input
+                class="inp4"
+                id="appointmentdate"
+                name="appointmentdate"
+                type="date"
+                required
+                data-reveal-step="4"
+            >
+
+
+            <!-- =====================================
+                 TIME
+            ====================================== -->
+
+            <p
+                class="p6"
+                data-reveal-step="5"
+            >
+                Select Appointment Time:
+            </p>
+
+
+            <input
+                class="inp5"
+                id="appointment-hour"
+                type="number"
+                min="1"
+                max="12"
+                placeholder="HH"
+                aria-label="Appointment hour"
+                required
+                data-reveal-step="5"
+            >
+
+
+            <span
+                class="time-separator"
+                aria-hidden="true"
+                data-reveal-step="5"
+            >
+                :
+            </span>
+
+
+            <input
+                class="inp5-minute"
+                id="appointment-minute"
+                type="number"
+                min="0"
+                max="59"
+                placeholder="MM"
+                aria-label="Appointment minute"
+                required
+                data-reveal-step="5"
+            >
+
+
+            <select
+                class="inp5-period"
+                id="appointment-period"
+                aria-label="AM or PM"
+                required
+                data-reveal-step="5"
+            >
+
+                <option
+                    value=""
+                    selected
+                    disabled
+                >
+                    AM/PM
+                </option>
+
+
+                <option value="AM">
+                    AM
+                </option>
+
+
+                <option value="PM">
+                    PM
+                </option>
+
+            </select>
+
+
+            <input
+                id="appointmenttime"
+                name="appointmenttime"
+                type="hidden"
+                data-reveal-step="5"
+            >
+
+
+            <!-- =====================================
+                 PHONE
+            ====================================== -->
+
+            <p
+                class="p7"
+                data-reveal-step="6"
+            >
+                Enter Your Phone Number:
+            </p>
+
+
+            <div
+                class="country-picker"
+                id="country-picker"
+                data-reveal-step="6"
+            >
+
+
+                <button
+                    class="country-picker-button"
+                    id="country-picker-button"
+                    type="button"
+                    aria-label="Select country and dialing code"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                >
+                    🌍 Country
+                </button>
+
+
+                <div
+                    class="country-options"
+                    id="country-options"
+                    role="listbox"
+                    aria-label="Countries"
+                >
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+1"
+                        data-flag="🇺🇸"
+                    >
+                        🇺🇸 United States
+                        <span>+1</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+1"
+                        data-flag="🇨🇦"
+                    >
+                        🇨🇦 Canada
+                        <span>+1</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+44"
+                        data-flag="🇬🇧"
+                    >
+                        🇬🇧 United Kingdom
+                        <span>+44</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+91"
+                        data-flag="🇮🇳"
+                    >
+                        🇮🇳 India
+                        <span>+91</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+61"
+                        data-flag="🇦🇺"
+                    >
+                        🇦🇺 Australia
+                        <span>+61</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+64"
+                        data-flag="🇳🇿"
+                    >
+                        🇳🇿 New Zealand
+                        <span>+64</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+81"
+                        data-flag="🇯🇵"
+                    >
+                        🇯🇵 Japan
+                        <span>+81</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+86"
+                        data-flag="🇨🇳"
+                    >
+                        🇨🇳 China
+                        <span>+86</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+33"
+                        data-flag="🇫🇷"
+                    >
+                        🇫🇷 France
+                        <span>+33</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+49"
+                        data-flag="🇩🇪"
+                    >
+                        🇩🇪 Germany
+                        <span>+49</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+39"
+                        data-flag="🇮🇹"
+                    >
+                        🇮🇹 Italy
+                        <span>+39</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+34"
+                        data-flag="🇪🇸"
+                    >
+                        🇪🇸 Spain
+                        <span>+34</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+55"
+                        data-flag="🇧🇷"
+                    >
+                        🇧🇷 Brazil
+                        <span>+55</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+52"
+                        data-flag="🇲🇽"
+                    >
+                        🇲🇽 Mexico
+                        <span>+52</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+27"
+                        data-flag="🇿🇦"
+                    >
+                        🇿🇦 South Africa
+                        <span>+27</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+971"
+                        data-flag="🇦🇪"
+                    >
+                        🇦🇪 United Arab Emirates
+                        <span>+971</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+966"
+                        data-flag="🇸🇦"
+                    >
+                        🇸🇦 Saudi Arabia
+                        <span>+966</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+65"
+                        data-flag="🇸🇬"
+                    >
+                        🇸🇬 Singapore
+                        <span>+65</span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        role="option"
+                        data-country-code="+82"
+                        data-flag="🇰🇷"
+                    >
+                        🇰🇷 South Korea
+                        <span>+82</span>
+                    </button>
+
+
+                </div>
+
+
+                <select
+                    class="country-code"
+                    id="country-code"
+                    name="countryCode"
+                    aria-label="Country dialing code"
+                    required
+                >
+
+                    <option
+                        value=""
+                        selected
+                        disabled
+                    >
+                        Choose a country
+                    </option>
+
+
+                    <option value="+1">
+                        United States
+                    </option>
+
+
+                    <option value="+1">
+                        Canada
+                    </option>
+
+
+                    <option value="+44">
+                        United Kingdom
+                    </option>
+
+
+                    <option value="+91">
+                        India
+                    </option>
+
+
+                    <option value="+61">
+                        Australia
+                    </option>
+
+
+                    <option value="+64">
+                        New Zealand
+                    </option>
+
+
+                    <option value="+81">
+                        Japan
+                    </option>
+
+
+                    <option value="+86">
+                        China
+                    </option>
+
+
+                    <option value="+33">
+                        France
+                    </option>
+
+
+                    <option value="+49">
+                        Germany
+                    </option>
+
+
+                    <option value="+39">
+                        Italy
+                    </option>
+
+
+                    <option value="+34">
+                        Spain
+                    </option>
+
+
+                    <option value="+55">
+                        Brazil
+                    </option>
+
+
+                    <option value="+52">
+                        Mexico
+                    </option>
+
+
+                    <option value="+27">
+                        South Africa
+                    </option>
+
+
+                    <option value="+971">
+                        United Arab Emirates
+                    </option>
+
+
+                    <option value="+966">
+                        Saudi Arabia
+                    </option>
+
+
+                    <option value="+65">
+                        Singapore
+                    </option>
+
+
+                    <option value="+82">
+                        South Korea
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <input
+                class="inp6"
+                id="phone"
+                name="tele"
+                type="tel"
+                required
+                placeholder="Phone number"
+                aria-label="Phone number"
+                aria-describedby="phone-error"
+                autocomplete="tel-national"
+                data-reveal-step="6"
+            >
+
+
+            <span
+                class="phone-value-effect"
+                id="phone-value-effect"
+                aria-hidden="true"
+                data-reveal-step="6"
+            ></span>
+
+
+            <span
+                class="phone-error"
+                id="phone-error"
+                role="alert"
+                aria-live="assertive"
+                data-reveal-step="6"
+            >
+                Enter a valid phone number with 10 digits,
+                Letters and extra digits are not allowed.
+            </span>
+
+
+            <!-- =====================================
+                 REASON
+            ====================================== -->
+
+            <textarea
+                class="inp7"
+                id="reason"
+                name="reason"
+                placeholder="Reason for appointment:(you can simply write the reason in a single word. EXAMPLE: FEVER)"
+                required
+                data-reveal-step="7"
+            ></textarea>
+
+
+            <p
+                class="p8"
+                data-reveal-step="7"
+            >
+                Enter The Reason For Your Appointment:
+            </p>
+
+
+            <!-- =====================================
+                 SUBMIT
+            ====================================== -->
+
+            <button
+                class="submit-button"
+                type="submit"
+                data-reveal-step="8"
+            >
+                Submit
+            </button>
+
+
+            {% for category, message in get_flashed_messages(with_categories=true) %}
+                <p class="form-status {{ category }}" role="status">
+                    {{ message }}
+                </p>
+            {% endfor %}
+
+
+        </form>
+
+    </div>
+
+</body>
+
+</html>

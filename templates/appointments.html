@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Requests</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='project2.css') }}">
+</head>
+<body class="admin-page">
+    <main class="admin-card">
+        <header class="admin-header">
+            <div>
+                <h1>Appointment requests</h1>
+                <p class="admin-subtitle">{{ appointments|length }} appointment{% if appointments|length != 1 %}s{% endif %}</p>
+            </div>
+            <nav class="admin-actions" aria-label="Admin actions">
+                <a class="admin-button secondary" href="{{ url_for('home') }}">Appointment form</a>
+                <form method="POST" action="{{ url_for('admin_logout') }}">
+                    <button class="admin-button" type="submit">Log out</button>
+                </form>
+            </nav>
+        </header>
+
+        {% if appointments %}
+            <div class="appointment-table-wrap">
+                <table class="appointment-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Patient</th>
+                            <th scope="col">Doctor</th>
+                            <th scope="col">Appointment</th>
+                            <th scope="col">Contact</th>
+                            <th scope="col">Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in appointments %}
+                            <tr>
+                                <td><strong>{{ appointment.name }}</strong><br>Age {{ appointment.age }} · {{ appointment.gender|title }}</td>
+                                <td>{{ appointment.doctor }}</td>
+                                <td>{{ appointment.date }}<br>{{ appointment.time }}</td>
+                                <td>{{ appointment.country_code }} {{ appointment.phone }}</td>
+                                <td>{{ appointment.reason }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="empty-appointments">No appointments have been submitted yet.</p>
+        {% endif %}
+    </main>
+</body>
+</html>

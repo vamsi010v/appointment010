@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrator Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='project2.css') }}">
+</head>
+<body class="admin-login-page">
+    <main class="admin-login-card">
+        <h1>Administrator login</h1>
+        <p>Sign in to view appointment requests.</p>
+        <form method="POST" action="{{ url_for('admin_login') }}">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" autocomplete="username" required autofocus>
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+            <button class="admin-button" type="submit">Log in</button>
+        </form>
+        {% for category, message in get_flashed_messages(with_categories=true) %}
+            <p class="form-status {{ category }}" role="alert">{{ message }}</p>
+        {% endfor %}
+        <p style="margin-top: 1rem;"><a href="{{ url_for('home') }}">Return to appointment form</a></p>
+    </main>
+</body>
+</html>
